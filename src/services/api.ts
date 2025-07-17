@@ -1,28 +1,63 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import type { Restaurante, Prato } from '../models/Restaurante'
+
+export type Product = {
+  id: number
+  price: number
+}
+
+export type PurchasePayload = {
+  products: Product[]
+  delivery: {
+    receiver: string
+    adress: {
+      description: string
+      city: string
+      zipCode: string
+      number: number
+      complement?: string
+    }
+  }
+  payment: {
+    card: {
+      name: string
+      number: string
+      code: number
+      expires: {
+        month: number
+        year: number
+      }
+    }
+  }
+}
+
+type ProductResponse = {
+  orderId: string
+}
 
 const api = createApi({
   baseQuery: fetchBaseQuery({
-    baseUrl: 'https://fake-api-tau.vercel.app/api/efood',
+    baseUrl: 'https://fake-api-tau.vercel.app/api/efood/'
   }),
-  endpoints: builder => ({
-    getFeatureRestaurantes: builder.query<Restaurante[], void>({
-      query: () => '/restaurantes',
+  endpoints: (builder) => ({
+    getListaRestaurante: builder.query<ListaRestaurantes[], void>({
+      query: () => 'restaurantes'
     }),
-    getFeaturePratos: builder.query<Prato[], string>({
-      query: id => `/restaurantes/${id}`,
-      transformResponse: (response: Restaurante) => response.cardapio,
+    getRestaurantes: builder.query<ListaRestaurantes, string>({
+      query: (id) => `restaurantes/${id}`
     }),
-    getRestauranteById: builder.query<Restaurante, number>({
-      query: id => `/restaurantes/${id}`,
-    }),
-  }),
+    purchase: builder.mutation<ProductResponse, PurchasePayload>({
+      query: (body) => ({
+        url: 'checkout',
+        method: 'POST',
+        body
+      })
+    })
+  })
 })
 
 export const {
-  useGetFeatureRestaurantesQuery,
-  useGetFeaturePratosQuery,
-  useGetRestauranteByIdQuery,
+  useGetListaRestauranteQuery,
+  useGetRestaurantesQuery,
+  usePurchaseMutation
 } = api
-
 export default api
